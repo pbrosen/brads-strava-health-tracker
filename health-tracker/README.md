@@ -1,86 +1,82 @@
 # Health Tracker
 
-A personal daily **health tracker** for Cowork — log your food, exercise, and
-digestive (gut) symptoms by simply chatting with Claude, and see it all in a visual
-dashboard. Everything is stored as **plain Markdown files in a folder on your own
-computer**. Nothing is uploaded anywhere.
+A personal daily **health tracker** for Claude Cowork — log your food, exercise, and
+digestive (gut) symptoms by chatting with Claude, with a visual dashboard. Everything is
+stored as **plain Markdown files in a folder on your own computer**. Nothing is uploaded
+anywhere.
 
 It does three things:
 
-1. **Food + calories.** Tell Claude what you ate ("turkey sandwich and chips for
-   lunch") and it logs it with estimated calories and macros, learning your common
-   foods over time. The dashboard shows intake, burn, net calories, and a 7-day chart.
-2. **Exercise + Strava.** Log manual workouts (weights, yoga) by chat or in the
-   dashboard. Connect **Strava** and Claude pulls your runs/rides into the burn and
-   net-calorie math when you ask.
+1. **Food + calories.** Tell Claude what you ate ("turkey sandwich and chips for lunch")
+   and it logs it with estimated calories and macros, learning your common foods over time.
+2. **Exercise + Strava.** Log manual workouts (weights, yoga) by chat or in the dashboard.
+   Connect **Strava** and Claude folds your runs/rides into your burn and net calories.
 3. **Digestion tracking.** Log gut episodes (diarrhea, loose stool, constipation,
-   gas/bloating) with severity and Bristol score, then ask Claude — or use the
-   dashboard's **"Find food correlations"** button — to see which foods tend to precede
-   your symptoms.
+   gas/bloating) with severity and Bristol score, then use the dashboard's
+   **"Find food correlations"** button to see which foods tend to precede your symptoms.
 
 ---
 
-## What you need
+## Setup — do these in order
 
-- **Cowork** (the Claude desktop app).
-- **Node.js** installed on your Mac/PC. The dashboard saves through a small local
-  file helper that runs on Node. If you don't have it: download the "LTS" installer
-  from https://nodejs.org and run it once. (You don't need to know anything about Node —
-  the installer is all it takes.)
-- **Strava** *(optional)* — connect it later from Cowork's connector store if you want
-  your runs/rides counted.
+Follow these top to bottom. Steps 1 and 2 must happen **before** you install the plugin,
+or the dashboard's file-saver won't start.
 
----
+### 1. Install Node.js  (skip if you already have it)
 
-## One-time setup (about 3 minutes)
+The dashboard saves through a tiny helper that runs on Node.js.
 
-### 1. Make your data folder
+- Easiest: open Cowork and say **"Help me install Node.js"** — Claude will check whether
+  you already have it, open the download page, get the official installer, and walk you
+  through it. (You'll click *Install* and enter your Mac/Windows password at one step —
+  Claude can't do that part for you.)
+- Or do it yourself: download the **LTS** installer from https://nodejs.org and run it.
 
-Create a folder named **`HealthTracker`** in your home folder:
+### 2. Make your data folder
 
-- **Mac:** `/Users/<you>/HealthTracker`  (i.e. `~/HealthTracker`)
+Create an empty folder named **`HealthTracker`** in your home folder:
+
+- **Mac:** `~/HealthTracker`  (i.e. `/Users/<you>/HealthTracker`)
 - **Windows:** `C:\Users\<you>\HealthTracker`
 
-This is where all your data lives, as plain `.md` files. You can open it any time.
+This is where all your data lives, as plain `.md` files.
 
-> The plugin is preset to use `~/HealthTracker`. If you want it somewhere else, open the
-> plugin's `.mcp.json` and change the last line (the folder path) to your folder, then
-> restart Cowork.
->
-> **Windows note:** if `npx` doesn't launch, change the `.mcp.json` `command` from
-> `"npx"` to `"cmd"` and make the first argument `"/c"` followed by `"npx"` (the standard
-> Windows form for npx-based MCP servers).
+> Want it somewhere else? After installing, open the plugin's `.mcp.json` and change the
+> folder path on the last line, then restart Cowork. **Windows:** if `npx` doesn't launch,
+> change the `.mcp.json` `command` from `"npx"` to `"cmd"` with `"/c"` then `"npx"` as the
+> first args.
 
-### 2. Install this plugin
+### 3. Install the plugin
 
-Open the `health-tracker.plugin` file in Cowork and click **Install**. Then **restart
-Cowork** so the local file helper starts.
+In Cowork, type these two commands:
 
-### 3. Connect the folder to Cowork
+```
+/plugin marketplace add pbrosen/brads-health-tracker
+/plugin install health-tracker@brad-health
+```
 
-In Cowork, connect/select your `HealthTracker` folder for the session. This lets Claude
-read and write your log files when you chat.
+### 4. Approve the connector and restart
 
-### 4. Open your dashboard
+Cowork will ask to enable the plugin's **`health-files`** connector — approve it. Then
+**quit and reopen Cowork** so the file-saver starts up with Node.
 
-Just say to Claude:
+### 5. Connect your folder
 
-> **"Set up my Health Tracker dashboard."**
+Point Cowork at your `~/HealthTracker` folder for the session, so chat-based logging can
+read and write it.
 
-Claude will create the **Health Tracker** dashboard (a live page you can pin and reopen).
-It finds your data folder automatically.
+### 6. Open your dashboard
 
-### 5. Set your numbers
+Say to Claude: **"Set up my Health Tracker dashboard."** Claude creates the dashboard
+(a live page you can pin and reopen). It finds your data folder automatically.
 
-In the dashboard, open **⚙ Calorie-burn settings** and enter your weight, height, and age.
-These drive the resting-calorie (BMR) math. *(The formula uses the male equation; if you
-need the female version, just tell Claude and it'll adjust your net-calorie reports in chat.)*
+### 7. Enter your numbers
 
-### 6. (Optional) Connect Strava
+In the dashboard, open **⚙ Calorie-burn settings** and enter your weight, height, and age
+(these drive the resting-calorie math). *Optional:* connect **Strava** from Cowork's
+connector store to count your runs/rides.
 
-From Cowork's connector store, connect **Strava**. After that, ask Claude things like
-"what's my net today?" and it will fold in your Strava workouts. The dashboard itself
-works fine with or without Strava.
+That's it — you're running.
 
 ---
 
@@ -95,16 +91,10 @@ works fine with or without Strava.
 - "What's my net calorie balance today?" *(pulls in Strava if connected)*
 - "What foods might be triggering my stomach?"
 
-**In the dashboard:**
-
-- Add food (leave macros blank to let Claude estimate them), exercise, and gut episodes.
-- See net calories, macros, VO₂ minutes, and your 7-day chart.
-- Click **🔎 Find food correlations** to scan which foods precede your diarrhea/loose
-  episodes. Treat results as *leads to watch, not proof* — correlation isn't causation,
-  and it needs a couple of weeks of consistent logging to mean anything.
-
-Logging by chat and logging in the dashboard write the **same files**, so they always
-stay in sync.
+**In the dashboard:** add food (leave macros blank to let Claude estimate them), exercise,
+and gut episodes; see net calories, macros, VO₂ minutes, and a 7-day chart; and click
+**🔎 Find food correlations** to scan which foods precede your diarrhea/loose episodes.
+Logging by chat and in the dashboard write the **same files**, so they stay in sync.
 
 ---
 
@@ -120,16 +110,23 @@ HealthTracker/
 └── symptom-log.md           ← rolling log of gut episodes
 ```
 
-These are normal Markdown files — open, back up, or sync them however you like.
+Normal Markdown files — open, back up, or sync them however you like.
 
 ---
 
-## A couple of notes
+## Troubleshooting
+
+- **"Couldn't find your Health Tracker folder."** Almost always means Node isn't installed,
+  or the `~/HealthTracker` folder wasn't created/connected, or you didn't restart Cowork
+  after installing. Re-check steps 1, 2, 4, and 5.
+- **Dashboard shows but won't save.** The `health-files` connector didn't start — confirm
+  Node is installed and you approved the connector, then restart Cowork.
+
+---
+
+## Notes
 
 - This is a personal tracker, **not medical advice**. The food↔symptom correlation is a
   rough statistical hint to discuss with a doctor or dietitian, not a diagnosis.
-- The dashboard reads/writes only your one `HealthTracker` folder. Nothing leaves your
-  computer.
-- If the dashboard says it "couldn't find your Health Tracker folder," make sure Node is
-  installed, the folder exists at `~/HealthTracker` (or your edited path), and you
-  restarted Cowork after installing.
+- Everything stays on your computer — the dashboard reads/writes only your one
+  `HealthTracker` folder.
