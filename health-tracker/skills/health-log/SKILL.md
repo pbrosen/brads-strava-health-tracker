@@ -251,6 +251,17 @@ source of truth. If you don't know them, ask Jim once and remember them for the 
 If Jim mentions a weight change in chat, remind him to update it in the dashboard's
 Settings panel so the two stay in sync (you can't write the dashboard's stored settings).
 
+### Optional: Strava auto-sync for the dashboard
+
+Strava is read live in chat by default, so the **dashboard's** burn number only includes
+Strava workouts if activity files exist in `BASE/strava/activities/`. If Jim wants the
+dashboard's burn/net to include his runs and rides (not just chat answers), set up the
+**Strava auto-sync** scheduled task: read
+`${CLAUDE_PLUGIN_ROOT}/skills/health-log/references/strava-sync.md` and create a scheduled
+task from the task prompt there (recommend a daily cadence). Trigger this when Jim says
+things like "set up my Strava auto-sync", "sync my Strava every day", or asks why the
+dashboard's burn doesn't include his workouts.
+
 ## Building the day file
 
 After mutating the `food` and `exercise` arrays, regenerate the whole file:
