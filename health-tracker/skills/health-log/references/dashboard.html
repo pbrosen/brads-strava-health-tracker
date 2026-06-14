@@ -1047,9 +1047,9 @@ function splitBatch(text, paths) {
   return out;
 }
 async function loadStravaForDates(dates) {
-  // Returns { [date]: [activities] }. In this build the dashboard does not read Strava files
-  // (Strava is read live by Claude in chat), so this normally returns empty arrays. The plumbing
-  // is kept so that if you ever drop Strava activity Markdown into BASE/strava/activities/, it works.
+  // Returns { [date]: [activities] }. The dashboard reads Strava activity Markdown files written
+  // into BASE/strava/activities/ by the (optional) Strava-sync task. With no sync task set up,
+  // this simply returns empty arrays and the burn number is manual exercise + resting only.
   const files = await listActivityFiles();
   const byDate = {};
   dates.forEach(d => byDate[d] = []);
@@ -1640,6 +1640,32 @@ async function navigateToDate(newDate) {
     }).catch(e => console.error("[health-tracker] Week food logs failed:", e));
 }
 
+// ---------- refresh the currently-viewed day on demand ----------
+// Re-reads today's food, symptoms, Strava activities, and the trailing week so the dashboard
+// reflects entries added in chat (or new synced workouts) every time it's looked at. Guarded so
+// overlapping focus events don't pile up.
+let RELOADING = false;
+async function reloadView() {
+  if (RELOADING) return;
+  RELOADING = true;
+  try {
+    const dates = pastNDates(VIEWING_DATE, 7);
+    try { DATA = await loadFoodLog(VIEWING_DATE); } catch (e) {}
+    try { await loadSymptoms(); } catch (e) {}
+    render();
+    try { STRAVA = await loadStravaForDates(dates); } catch (e) {}
+    STRAVA_READY_DATE = VIEWING_DATE;
+    try {
+      const results = await Promise.all(dates.slice(1).map(d => loadFoodLog(d).then(data => [d, data]).catch(_ => [d, { food: [], exercise: [] }])));
+      WEEK_DATA = {};
+      results.forEach(p => { WEEK_DATA[p[0]] = p[1]; });
+    } catch (e) {}
+    render();
+  } finally {
+    RELOADING = false;
+  }
+}
+
 // ---------- init ----------
 async function init() {
   await discoverBase();
@@ -1749,8 +1775,9 @@ async function refreshOnFocus() {
       render();
     }
   } else {
-    // Same day — just re-render so resting calories prorate to the current minute
-    render();
+    // Same day — reload today's food, symptoms, and Strava so entries added in chat (or newly
+    // synced workouts) show up, then re-render (which also re-prorates resting to the current minute).
+    reloadView();
   }
 }
 
