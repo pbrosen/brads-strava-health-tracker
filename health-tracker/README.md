@@ -19,20 +19,10 @@ It does three things:
 
 ## Setup — do these in order
 
-Follow these top to bottom. Steps 1 and 2 must happen **before** you install the plugin,
-or the dashboard's file-saver won't start.
+No terminal, no Node, no config files. The dashboard saves to your computer through a
+one-click **Filesystem** extension (it bundles everything it needs).
 
-### 1. Install Node.js  (skip if you already have it)
-
-The dashboard saves through a tiny helper that runs on Node.js.
-
-- Easiest: open Cowork and say **"Help me install Node.js"** — Claude will check whether
-  you already have it, open the download page, get the official installer, and walk you
-  through it. (You'll click *Install* and enter your Mac/Windows password at one step —
-  Claude can't do that part for you.)
-- Or do it yourself: download the **LTS** installer from https://nodejs.org and run it.
-
-### 2. Make your data folder
+### 1. Make your data folder
 
 Create an empty folder named **`HealthTracker`** in your home folder:
 
@@ -41,10 +31,15 @@ Create an empty folder named **`HealthTracker`** in your home folder:
 
 This is where all your data lives, as plain `.md` files.
 
-> Want it somewhere else? After installing, open the plugin's `.mcp.json` and change the
-> folder path on the last line, then restart Cowork. **Windows:** if `npx` doesn't launch,
-> change the `.mcp.json` `command` from `"npx"` to `"cmd"` with `"/c"` then `"npx"` as the
-> first args.
+### 2. Install the Filesystem extension and point it at that folder
+
+This is what lets the dashboard read and write your files (no Node, no setup files — the
+extension is self-contained).
+
+1. In Claude/Cowork, open **Settings → Extensions** (a.k.a. Connectors).
+2. Click **Browse extensions**, find the official **Filesystem** extension, and click **Install**.
+3. When it asks which folder it may access, choose your **`HealthTracker`** folder.
+4. Make sure it's **enabled for this chat** (the "+" → Connectors panel).
 
 ### 3. Install the plugin
 
@@ -55,44 +50,39 @@ In Cowork, type these two commands:
 /plugin install health-tracker@brad-health
 ```
 
-### 4. Approve the connector and restart
-
-Cowork will ask to enable the plugin's **`health-files`** connector — approve it. Then
-**quit and reopen Cowork** so the file-saver starts up with Node.
-
-### 5. Connect your folder
+### 4. Connect your folder
 
 Point Cowork at your `~/HealthTracker` folder for the session, so chat-based logging can
-read and write it.
+read and write it too.
 
-### 6. Open your dashboard
+### 5. Open your dashboard
 
 Say to Claude: **"Set up my Health Tracker dashboard."** Claude creates the dashboard
-(a live page you can pin and reopen). It finds your data folder automatically.
+(a live page you can pin and reopen), wiring it to your installed Filesystem extension and
+finding your data folder automatically.
 
-### 7. Enter your numbers
+### 6. Enter your numbers
 
 In the dashboard, open **⚙ Calorie-burn settings** and enter your weight, height, and age
 (these drive the resting-calorie math).
 
-### 8. Connect Strava  (optional)
+### 7. Connect Strava  (optional)
 
 Strava lets Claude count your runs and rides toward your burn and net calories.
 
-1. In Cowork, open the **connector store / directory** (the same place you add connectors).
+1. In Cowork, open the **connector store / directory**.
 2. Find **Strava** and click **Connect**.
 3. You'll be sent to Strava's site — **sign in** and click **Authorize** to grant access.
-4. Back in Cowork, make sure **Strava is enabled for this chat** (check the "+" → Connectors panel).
+4. Back in Cowork, make sure **Strava is enabled for this chat** (the "+" → Connectors panel).
 
-Once connected, there's nothing else to set up — just ask Claude things like *"what's my net
-today?"* or *"how many calories did I burn on my run?"* and it pulls your Strava workouts in.
-(Button wording may vary slightly by Cowork version. You can skip this and add Strava anytime.)
+Once connected, just ask Claude things like *"what's my net today?"* and it pulls your Strava
+workouts in.
 
 > **Want the *dashboard's* burn number to include Strava too?** By default Strava shows up
 > when you ask Claude in chat, but the dashboard's "Burned today" only counts manual exercise
 > + resting. To have your runs/rides feed the dashboard automatically, just say **"set up my
-> Strava auto-sync"** — Claude will create a daily task that pulls Strava into your folder, and
-> the dashboard picks it up. Optional, and you can add it anytime.
+> Strava auto-sync"** — Claude creates a daily task that pulls Strava into your folder, and the
+> dashboard picks it up. Optional, and you can add it anytime.
 
 That's it — you're running.
 
@@ -134,11 +124,13 @@ Normal Markdown files — open, back up, or sync them however you like.
 
 ## Troubleshooting
 
-- **"Couldn't find your Health Tracker folder."** Almost always means Node isn't installed,
-  or the `~/HealthTracker` folder wasn't created/connected, or you didn't restart Cowork
-  after installing. Re-check steps 1, 2, 4, and 5.
-- **Dashboard shows but won't save.** The `health-files` connector didn't start — confirm
-  Node is installed and you approved the connector, then restart Cowork.
+- **"Couldn't find your Health Tracker folder."** Almost always means the Filesystem
+  extension isn't installed/enabled, or it isn't pointed at your `HealthTracker` folder, or
+  the folder doesn't exist. Re-check steps 1 and 2.
+- **Dashboard shows but won't save.** The Filesystem extension didn't connect — confirm it's
+  installed, enabled for this chat, and granted access to the folder. If saving still fails,
+  the dashboard's connector name may differ on your machine; tell Claude "the dashboard can't
+  save" and it can re-wire it.
 
 ---
 
@@ -146,5 +138,5 @@ Normal Markdown files — open, back up, or sync them however you like.
 
 - This is a personal tracker, **not medical advice**. The food↔symptom correlation is a
   rough statistical hint to discuss with a doctor or dietitian, not a diagnosis.
-- Everything stays on your computer — the dashboard reads/writes only your one
-  `HealthTracker` folder.
+- Everything stays on your computer — the Filesystem extension reads/writes only the one
+  `HealthTracker` folder you granted it.
