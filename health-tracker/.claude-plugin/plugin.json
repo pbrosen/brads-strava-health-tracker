@@ -1,6 +1,6 @@
 {
   "name": "health-tracker",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Daily health tracker — log food, exercise, and digestive (gut) symptoms by chatting with Claude, with a visual dashboard. Everything is saved as plain local Markdown files in a folder you choose. Pulls in Strava workouts for calorie-burn and net-calorie math.",
   "author": {
     "name": "Brad Rosen"
