@@ -9,12 +9,12 @@ dashboard and live Strava support.
 In Cowork / Claude Code:
 
 ```
-/plugin marketplace add pbrosen/brads-health-tracker
+/plugin marketplace add pbrosen/brads-strava-health-tracker
 /plugin install health-tracker@brad-health
 ```
 
 Then follow `health-tracker/README.md` for the 3-minute setup (make a `~/HealthTracker`
-folder, install Node, open the dashboard).
+folder, install the one-click Filesystem extension, open the dashboard).
 
 
 ## What's in here
