@@ -108,11 +108,17 @@ details.settings { background: #fff; border: 1px solid #e7e5e4; border-radius: 1
 details.settings summary { padding: 12px 16px; cursor: pointer; font-size: 12px; color: #78716c; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
 details.settings summary:hover { color: #1c1917; }
 details.settings[open] summary { border-bottom: 1px solid #f5f5f4; }
-.settings-body { padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+.settings-body { padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
 .settings-body label { font-size: 12px; color: #78716c; display: block; margin-bottom: 4px; }
 .settings-body input { width: 100%; padding: 7px 9px; border: 1px solid #d6d3d1; border-radius: 6px; font: inherit; }
 .settings-body button { padding: 8px 16px; background: #1c1917; color: #fff; border: none; border-radius: 6px; font: inherit; font-weight: 600; cursor: pointer; }
 .settings-note { grid-column: 1 / -1; font-size: 12px; color: #a8a29e; line-height: 1.5; }
+.neat-tag { font-size: 11px; color: #a8a29e; font-weight: 400; margin-left: 6px; white-space: nowrap; }
+.neat-tag button.icon { font-size: 11px; padding: 1px 4px; vertical-align: baseline; }
+.neat-tag input { width: 60px; padding: 2px 5px; border: 1px solid #d6d3d1; border-radius: 4px; font: inherit; font-size: 11px; }
+.neat-tag button.nb { padding: 2px 6px; border-radius: 4px; font: inherit; font-size: 10px; font-weight: 600; cursor: pointer; border: none; margin-left: 3px; }
+.neat-tag button.nb.ok { background: #1c1917; color: #fff; }
+.neat-tag button.nb.cc { background: #fff; color: #57534e; border: 1px solid #d6d3d1; }
 form.sym { grid-template-columns: 120px 82px 116px 104px 78px 1fr auto; }
 form.entry select { padding: 7px 9px; border: 1px solid #d6d3d1; border-radius: 6px; font: inherit; background: #fff; min-width: 0; }
 form.entry select:focus { outline: none; border-color: #78716c; }
@@ -165,7 +171,7 @@ form.entry select:focus { outline: none; border-color: #78716c; }
     <div class="card">
       <h2>Burned today</h2>
       <div class="macro"><span class="lbl">Total</span><span class="val"><span id="cal-out">—</span></span></div>
-      <div class="macro"><span class="lbl">— Resting (so far today)</span><span class="val" id="cal-rest">—</span></div>
+      <div class="macro"><span class="lbl">— Resting + NEAT (so far today) <span class="neat-tag" id="neat-tag"></span></span><span class="val" id="cal-rest">—</span></div>
       <div class="macro"><span class="lbl">— Active</span><span class="val"><span id="cal-active">—</span><span class="breakdown" id="cal-out-bd"></span></span></div>
       <div class="macro"><span class="lbl">VO₂max zone min · today</span><span class="val"><span id="vo2-today">—</span><span class="breakdown" id="vo2-today-bd"></span></span></div>
       <div class="macro"><span class="lbl">VO₂max zone min · this week</span><span class="val" id="vo2-week">—</span></div>
@@ -264,9 +270,13 @@ form.entry select:focus { outline: none; border-color: #78716c; }
         <label for="set-age">Age</label>
         <input type="number" id="set-age" min="10" max="120" step="1">
       </div>
+      <div>
+        <label for="set-neat">Default NEAT (kcal/day)</label>
+        <input type="number" id="set-neat" min="0" max="1000" step="10">
+      </div>
       <button id="set-save">Save & recalc</button>
       <div class="settings-note">
-        Resting calories use Mifflin–St Jeor BMR (weight + height + age, prorated to current time of day, male formula). Active calories come from manual entries and from Strava workouts Claude pulls in via chat. Set your own numbers here.
+        Resting calories use Mifflin–St Jeor BMR + NEAT (non-exercise activity thermogenesis — walking, stairs, errands), prorated to the current time of day (male formula). BMR and NEAT are stored per day, so historical values don't shift when you change a setting. The default NEAT above applies to new days; click the ✎ next to "NEAT" in the burn card to adjust a specific day. Active calories come from manual entries and from Strava workouts Claude pulls in via chat.
       </div>
     </div>
   </details>
@@ -399,7 +409,7 @@ function unwrapMcp(res) {
 
 // ---------- settings ----------
 const SETTINGS_KEY = "health-tracker-settings-v1";
-let SETTINGS = { weight_kg: 80, height_cm: 178, age: 40 };
+let SETTINGS = { weight_kg: 80, height_cm: 178, age: 40, neat_kcal: 350 };
 function loadSettings() {
   try {
     const s = localStorage.getItem(SETTINGS_KEY);
@@ -408,17 +418,20 @@ function loadSettings() {
       if (o.weight_kg) SETTINGS.weight_kg = +o.weight_kg;
       if (o.height_cm) SETTINGS.height_cm = +o.height_cm;
       if (o.age) SETTINGS.age = +o.age;
+      if (o.neat_kcal != null) SETTINGS.neat_kcal = +o.neat_kcal;
     }
   } catch (e) {}
   document.getElementById("set-weight").value = SETTINGS.weight_kg;
   document.getElementById("set-height").value = SETTINGS.height_cm;
   document.getElementById("set-age").value = SETTINGS.age;
+  document.getElementById("set-neat").value = SETTINGS.neat_kcal;
 }
 function saveSettings() {
   const w = +document.getElementById("set-weight").value || 80;
   const h = +document.getElementById("set-height").value || 178;
   const a = +document.getElementById("set-age").value || 40;
-  SETTINGS = { weight_kg: w, height_cm: h, age: a };
+  const neat = +document.getElementById("set-neat").value || 0;
+  SETTINGS = { weight_kg: w, height_cm: h, age: a, neat_kcal: neat };
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(SETTINGS));
   // Recompute kcal estimates on cached Strava activities (only those without real Strava kcal)
   Object.values(STRAVA).forEach(arr => arr.forEach(a => {
@@ -429,17 +442,25 @@ function saveSettings() {
 }
 
 // Mifflin–St Jeor BMR (men): 10w + 6.25h − 5a + 5  (kcal/day at total rest)
-function bmrPerDay() {
+function pureBmr() {
   return Math.round(10 * SETTINGS.weight_kg + 6.25 * SETTINGS.height_cm - 5 * SETTINGS.age + 5);
 }
-function restingCaloriesForDate(dateStr) {
-  const bmr = bmrPerDay();
+// For backward compat — callers that just need BMR from current settings
+function bmrPerDay() { return pureBmr(); }
+// Full resting burn = stored BMR + stored NEAT (or defaults from settings)
+function restingBurnPerDay(dayData) {
+  const bmr = (dayData && dayData.bmr_per_day != null) ? dayData.bmr_per_day : pureBmr();
+  const neat = (dayData && dayData.neat_kcal != null) ? dayData.neat_kcal : SETTINGS.neat_kcal;
+  return bmr + neat;
+}
+function restingCaloriesForDate(dateStr, dayData) {
+  const total = restingBurnPerDay(dayData);
   if (dateStr === TODAY) {
     const now = new Date();
     const minutesElapsed = now.getHours() * 60 + now.getMinutes();
-    return Math.round(bmr * (minutesElapsed / 1440));
+    return Math.round(total * (minutesElapsed / 1440));
   }
-  return bmr; // full day
+  return total; // full day
 }
 
 // ---------- file format (food-log) ----------
@@ -453,7 +474,10 @@ function parseFile(text) {
   const jsonStr = text.substring(i + DATA_OPEN.length, j).trim();
   try {
     const obj = JSON.parse(jsonStr);
-    return { food: Array.isArray(obj.food) ? obj.food : [], exercise: Array.isArray(obj.exercise) ? obj.exercise : [] };
+    const result = { food: Array.isArray(obj.food) ? obj.food : [], exercise: Array.isArray(obj.exercise) ? obj.exercise : [] };
+    if (obj.bmr_per_day != null) result.bmr_per_day = +obj.bmr_per_day;
+    if (obj.neat_kcal != null) result.neat_kcal = +obj.neat_kcal;
+    return result;
   } catch (e) { return empty; }
 }
 function totals(data) {
@@ -477,6 +501,10 @@ function stravaTotals(activities) {
 function buildFile(date, data) {
   const tot = totals(data);
   const net = tot.calIn - tot.calOut; // manual-only net for frontmatter; Strava is read separately
+  // Snapshot BMR + NEAT for this day. Use stored values if already set (preserves history);
+  // otherwise capture current settings so this day's resting burn is frozen at save time.
+  const storedBmr = data.bmr_per_day != null ? data.bmr_per_day : pureBmr();
+  const storedNeat = data.neat_kcal != null ? data.neat_kcal : SETTINGS.neat_kcal;
   const lines = [];
   lines.push("---");
   lines.push("title: Food Log " + date);
@@ -490,12 +518,15 @@ function buildFile(date, data) {
   lines.push("carbs_g: " + tot.c);
   lines.push("fat_g: " + tot.f);
   lines.push("vo2_zone_min_manual: " + tot.vo2);
+  lines.push("bmr_per_day: " + storedBmr);
+  lines.push("neat_kcal: " + storedNeat);
   lines.push("---");
   lines.push("");
   lines.push("## Summary");
   lines.push("- Calories in: **" + tot.calIn + "** · manual exercise out: **" + tot.calOut + "**");
   lines.push("- Protein **" + tot.p + "g** · Carbs **" + tot.c + "g** · Fat **" + tot.f + "g**");
   lines.push("- Manual VO₂max zone minutes: **" + tot.vo2 + "**");
+  lines.push("- Resting burn: BMR **" + storedBmr + "** + NEAT **" + storedNeat + "** = **" + (storedBmr + storedNeat) + "** kcal/day");
   lines.push("- _(Strava-derived burn + VO₂ min are read live by Claude and not duplicated here.)_");
   lines.push("");
   lines.push("## Food");
@@ -513,7 +544,7 @@ function buildFile(date, data) {
   });
   lines.push("");
   lines.push(DATA_OPEN);
-  lines.push(JSON.stringify({ food: data.food, exercise: data.exercise }));
+  lines.push(JSON.stringify({ food: data.food, exercise: data.exercise, bmr_per_day: storedBmr, neat_kcal: storedNeat }));
   lines.push(DATA_CLOSE);
   lines.push("");
   return lines.join("\n");
@@ -969,7 +1000,9 @@ function updateDiag() {
   const parts = [];
   parts.push("BASE = " + (BASE || "(not found)"));
   parts.push("TODAY = " + TODAY + "   VIEWING_DATE = " + VIEWING_DATE);
-  parts.push("BMR (full day) = " + bmrPerDay() + " kcal");
+  const diagBmr = (DATA.bmr_per_day != null) ? DATA.bmr_per_day : pureBmr();
+  const diagNeat = (DATA.neat_kcal != null) ? DATA.neat_kcal : SETTINGS.neat_kcal;
+  parts.push("Resting (full day) = BMR " + diagBmr + " + NEAT " + diagNeat + " = " + (diagBmr + diagNeat) + " kcal");
   parts.push("Library: " + Object.keys(LIBRARY).length + " items");
   parts.push("Symptoms logged: " + SYMPTOMS.length);
   parts.push("");
@@ -1137,7 +1170,7 @@ function dayBurnTotals(date, manualData) {
   const hasEntries = (Array.isArray(data.food) && data.food.length > 0) ||
                      (Array.isArray(data.exercise) && data.exercise.length > 0);
   const counted = (date === TODAY) || hasEntries;
-  const resting = counted ? restingCaloriesForDate(date) : 0;
+  const resting = counted ? restingCaloriesForDate(date, data) : 0;
   const stravaCal = counted ? sT.cal : 0;
   const manualCal = counted ? mT.calOut : 0;
   const active = stravaCal + manualCal;
@@ -1200,6 +1233,7 @@ function render() {
 
   document.getElementById("cal-out").textContent = burnReady ? (burn.total_cal + " cal") : "…";
   document.getElementById("cal-rest").textContent = burn.resting_cal + " cal";
+  renderNeatTag();
   document.getElementById("cal-active").textContent = burnReady ? (burn.active_cal + " cal") : "loading…";
   const calBd = [];
   if (burnReady && burn.strava_cal) calBd.push(burn.strava_cal + " Strava");
@@ -1225,6 +1259,43 @@ function render() {
   renderExLog();
   renderSymptomLog();
   renderChart();
+}
+
+function renderNeatTag() {
+  const tag = document.getElementById("neat-tag");
+  if (!tag) return;
+  const dayNeat = (DATA.neat_kcal != null) ? DATA.neat_kcal : SETTINGS.neat_kcal;
+  const isDefault = (DATA.neat_kcal == null);
+  tag.innerHTML = "NEAT: " + dayNeat + (isDefault ? " (default)" : "") +
+    " <button class=\"icon edit\" id=\"neat-edit-btn\" title=\"Adjust NEAT for this day\">✎</button>";
+  document.getElementById("neat-edit-btn").addEventListener("click", openNeatEdit);
+}
+function openNeatEdit() {
+  const tag = document.getElementById("neat-tag");
+  if (!tag) return;
+  const dayNeat = (DATA.neat_kcal != null) ? DATA.neat_kcal : SETTINGS.neat_kcal;
+  tag.innerHTML = "<input type=\"number\" id=\"neat-day-input\" min=\"0\" max=\"1000\" step=\"10\" value=\"" + dayNeat + "\">" +
+    " <button class=\"nb ok\" id=\"neat-day-save\">OK</button>" +
+    "<button class=\"nb cc\" id=\"neat-day-cancel\">Cancel</button>";
+  const inp = document.getElementById("neat-day-input");
+  inp.focus();
+  inp.select();
+  document.getElementById("neat-day-save").addEventListener("click", saveNeatForDay);
+  document.getElementById("neat-day-cancel").addEventListener("click", () => renderNeatTag());
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") saveNeatForDay(); if (e.key === "Escape") renderNeatTag(); });
+}
+async function saveNeatForDay() {
+  const val = +document.getElementById("neat-day-input").value || 0;
+  DATA.neat_kcal = val;
+  // If this day didn't have a stored BMR yet, capture it now
+  if (DATA.bmr_per_day == null) DATA.bmr_per_day = pureBmr();
+  render();
+  try {
+    await saveFoodLog(VIEWING_DATE, DATA);
+    toast("NEAT updated to " + val + " for " + VIEWING_DATE);
+  } catch (err) {
+    toast("Save failed", true);
+  }
 }
 
 function renderFoodLog() {
