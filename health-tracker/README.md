@@ -46,7 +46,7 @@ extension is self-contained).
 In Cowork, type these two commands:
 
 ```
-/plugin marketplace add pbrosen/brads-health-tracker
+/plugin marketplace add pbrosen/brads-strava-health-tracker
 /plugin install health-tracker@brad-health
 ```
 
