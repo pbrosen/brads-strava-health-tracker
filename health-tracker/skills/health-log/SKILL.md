@@ -361,7 +361,10 @@ Health Tracker":
    `mcp_tools` when you call `create_artifact`. The default assumes the connector is named
    `filesystem`; if his differs, that's the one thing to fix. The dashboard then
    auto-discovers the data folder via `list_allowed_directories`.
-3. Tell him he can now log by chatting (this skill) or in the dashboard, and that Strava
+3. The first time he opens the dashboard it greets him with a short setup wizard (weight,
+   height, age, and an everyday-activity level that sets his NEAT). Once he completes or skips
+   it, it won't show again; he can always change these numbers in **Calorie-burn settings**.
+4. Tell him he can now log by chatting (this skill) or in the dashboard, and that Strava
    workouts appear when he asks you about burn/net in chat.
 
 ## Things that should NOT happen
