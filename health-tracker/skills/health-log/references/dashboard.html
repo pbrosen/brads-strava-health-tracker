@@ -144,6 +144,32 @@ form.entry select:focus { outline: none; border-color: #78716c; }
   form.food input[name="name"], form.ex input[name="name"], form.sym input[name="note"] { grid-column: 1 / -1; }
   form.entry button.add { grid-column: 1 / -1; }
 }
+/* ---- onboarding wizard ---- */
+.onboard-overlay { position: fixed; inset: 0; background: rgba(28,25,23,0.55); backdrop-filter: blur(3px); z-index: 50; display: none; align-items: center; justify-content: center; padding: 20px; }
+.onboard-overlay.show { display: flex; }
+.onboard-card { background: #fff; border: 1px solid #e7e5e4; border-radius: 16px; padding: 26px; max-width: 460px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.18); max-height: 92vh; overflow-y: auto; }
+.onboard-card h2 { margin: 0 0 4px 0; font-size: 20px; font-weight: 700; color: #1c1917; text-transform: none; letter-spacing: 0; display: block; }
+.onboard-card .lead { color: #57534e; font-size: 13px; margin: 0 0 18px 0; line-height: 1.5; }
+.onboard-field { margin-bottom: 16px; }
+.onboard-field > label { display: block; font-size: 12px; font-weight: 600; color: #44403c; margin-bottom: 6px; }
+.onboard-field .sub { font-weight: 400; color: #a8a29e; }
+.onboard-row { display: flex; gap: 8px; }
+.onboard-card input[type=number] { width: 100%; padding: 9px 10px; border: 1px solid #d6d3d1; border-radius: 8px; font: inherit; }
+.onboard-card input:focus { outline: none; border-color: #78716c; }
+.act-opts { display: grid; gap: 8px; }
+.act-opt { display: flex; align-items: flex-start; gap: 10px; border: 1px solid #d6d3d1; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+.act-opt:hover { border-color: #a8a29e; background: #fafaf9; }
+.act-opt.sel { border-color: #1c1917; background: #f5f5f4; }
+.act-opt input { margin-top: 3px; flex-shrink: 0; }
+.act-opt .t { font-size: 13px; font-weight: 600; color: #1c1917; }
+.act-opt .d { font-size: 12px; color: #78716c; }
+.onboard-exact { margin-top: 8px; display: none; }
+.onboard-exact.show { display: block; }
+.onboard-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; }
+.onboard-actions .skip { background: none; border: none; color: #a8a29e; font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; }
+.onboard-actions .start { padding: 10px 22px; background: #1c1917; color: #fff; border: none; border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer; }
+.onboard-actions .start:hover { background: #44403c; }
+.onboard-err { color: #b91c1c; font-size: 12px; margin-top: 10px; min-height: 14px; }
 </style>
 </head>
 <body>
@@ -286,6 +312,46 @@ form.entry select:focus { outline: none; border-color: #78716c; }
   </div>
 </div>
 
+<div class="onboard-overlay" id="onboard">
+  <div class="onboard-card">
+    <h2>Welcome to your Health Tracker 👋</h2>
+    <p class="lead">A couple of quick numbers so your "calories burned" is accurate. You can change these anytime under Calorie-burn settings.</p>
+    <div class="onboard-field">
+      <label>Weight <span class="sub">(lb)</span></label>
+      <input type="number" id="ob-weight" min="60" max="600" step="1" placeholder="e.g. 175">
+    </div>
+    <div class="onboard-field">
+      <label>Height</label>
+      <div class="onboard-row">
+        <input type="number" id="ob-ft" min="3" max="8" step="1" placeholder="ft">
+        <input type="number" id="ob-in" min="0" max="11" step="1" placeholder="in">
+      </div>
+    </div>
+    <div class="onboard-field">
+      <label>Age <span class="sub">(years)</span></label>
+      <input type="number" id="ob-age" min="13" max="100" step="1" placeholder="e.g. 42">
+    </div>
+    <div class="onboard-field">
+      <label>Outside of workouts, how active is your typical day?</label>
+      <div class="act-opts" id="ob-acts">
+        <label class="act-opt"><input type="radio" name="ob-act" value="250"><span><span class="t">Mostly sitting</span><br><span class="d">Desk job, not much walking — ~250 cal/day</span></span></label>
+        <label class="act-opt sel"><input type="radio" name="ob-act" value="400" checked><span><span class="t">Moderately active</span><br><span class="d">Some walking and standing — ~400 cal/day</span></span></label>
+        <label class="act-opt"><input type="radio" name="ob-act" value="550"><span><span class="t">On my feet most of the day</span><br><span class="d">Lots of walking/standing — ~550 cal/day</span></span></label>
+        <label class="act-opt"><input type="radio" name="ob-act" value="700"><span><span class="t">Very active / physical job</span><br><span class="d">Manual labor, always moving — ~700 cal/day</span></span></label>
+        <label class="act-opt"><input type="radio" name="ob-act" value="custom"><span><span class="t">Enter an exact number</span><br><span class="d">If you already know your non-exercise burn</span></span></label>
+      </div>
+      <div class="onboard-exact" id="ob-exact-wrap">
+        <input type="number" id="ob-neat" min="0" max="1000" step="10" placeholder="Daily non-exercise burn (kcal)">
+      </div>
+    </div>
+    <div class="onboard-err" id="ob-err"></div>
+    <div class="onboard-actions">
+      <button class="skip" id="ob-skip">Skip for now</button>
+      <button class="start" id="ob-save">Start tracking</button>
+    </div>
+  </div>
+</div>
+
 <div class="byline">Created by Brad Rosen</div>
 
 <div class="toast" id="toast"></div>
@@ -409,6 +475,7 @@ function unwrapMcp(res) {
 
 // ---------- settings ----------
 const SETTINGS_KEY = "health-tracker-settings-v1";
+const ONBOARD_KEY = "health-tracker-onboarded";
 let SETTINGS = { weight_kg: 80, height_cm: 178, age: 40, neat_kcal: 350 };
 function loadSettings() {
   try {
@@ -439,6 +506,69 @@ function saveSettings() {
   }));
   render();
   toast("Settings saved");
+}
+
+// ---------- first-run onboarding wizard ----------
+// Collects weight (lb), height (ft/in), age, and a non-exercise-activity level (mapped to a
+// NEAT kcal/day value), then writes them into SETTINGS so "calories burned" is accurate from
+// day one. Shown only until the user completes or skips it (tracked by ONBOARD_KEY); existing
+// users who already have saved settings never see it.
+function lbToKg(lb) { return Math.round(lb * 0.453592 * 10) / 10; }
+function ftInToCm(ft, inch) { return Math.round((ft * 12 + (inch || 0)) * 2.54); }
+
+function maybeShowOnboarding() {
+  let onboarded = false, hasSettings = false;
+  try { onboarded = !!localStorage.getItem(ONBOARD_KEY); } catch (e) {}
+  try { hasSettings = !!localStorage.getItem(SETTINGS_KEY); } catch (e) {}
+  if (onboarded || hasSettings) return; // returning user — skip
+  const ov = document.getElementById("onboard");
+  if (!ov) return;
+  const acts = document.getElementById("ob-acts");
+  const exactWrap = document.getElementById("ob-exact-wrap");
+  acts.addEventListener("change", () => {
+    acts.querySelectorAll(".act-opt").forEach(o => o.classList.toggle("sel", o.querySelector("input").checked));
+    const v = acts.querySelector("input[name=ob-act]:checked");
+    const custom = v && v.value === "custom";
+    exactWrap.classList.toggle("show", custom);
+    if (custom) document.getElementById("ob-neat").focus();
+  });
+  document.getElementById("ob-skip").addEventListener("click", () => {
+    try { localStorage.setItem(ONBOARD_KEY, "skipped"); } catch (e) {}
+    ov.classList.remove("show"); // keeps current defaults; user can set numbers in Settings later
+  });
+  document.getElementById("ob-save").addEventListener("click", completeOnboarding);
+  ov.classList.add("show");
+  setTimeout(() => { const w = document.getElementById("ob-weight"); if (w) w.focus(); }, 50);
+}
+
+function completeOnboarding() {
+  const err = document.getElementById("ob-err");
+  const lb = +document.getElementById("ob-weight").value;
+  const ft = +document.getElementById("ob-ft").value;
+  const inch = +document.getElementById("ob-in").value || 0;
+  const age = +document.getElementById("ob-age").value;
+  const actEl = document.querySelector("input[name=ob-act]:checked");
+  let neat;
+  if (actEl && actEl.value === "custom") neat = +document.getElementById("ob-neat").value;
+  else neat = actEl ? +actEl.value : SETTINGS.neat_kcal;
+  if (!lb || lb < 50) { err.textContent = "Please enter your weight in pounds."; return; }
+  if (!ft) { err.textContent = "Please enter your height (feet, and inches)."; return; }
+  if (!age || age < 13) { err.textContent = "Please enter your age."; return; }
+  if (neat == null || isNaN(neat) || neat < 0) { err.textContent = "Please pick an activity level (or enter a number)."; return; }
+  err.textContent = "";
+  SETTINGS = { weight_kg: lbToKg(lb), height_cm: ftInToCm(ft, inch), age: age, neat_kcal: Math.round(neat) };
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(SETTINGS)); } catch (e) {}
+  try { localStorage.setItem(ONBOARD_KEY, "done"); } catch (e) {}
+  // Mirror into the Settings panel inputs
+  document.getElementById("set-weight").value = SETTINGS.weight_kg;
+  document.getElementById("set-height").value = SETTINGS.height_cm;
+  document.getElementById("set-age").value = SETTINGS.age;
+  document.getElementById("set-neat").value = SETTINGS.neat_kcal;
+  document.getElementById("onboard").classList.remove("show");
+  // Re-estimate Strava kcal (those without real Strava calories) and re-render with the new resting burn
+  Object.values(STRAVA).forEach(arr => arr.forEach(a => { if (!a.kcal_from_strava) a.kcal = estimateKcal(a.avg_hr, a.duration_min); }));
+  render();
+  toast("You're all set — welcome!");
 }
 
 // Mifflin–St Jeor BMR (men): 10w + 6.25h − 5a + 5  (kcal/day at total rest)
@@ -1746,6 +1876,7 @@ async function init() {
   await ensureDirs();
   if (!BASE) toast("Couldn't find your Health Tracker folder — check the plugin's data folder (default ~/HealthTracker).", true);
   loadSettings();
+  maybeShowOnboarding();
   document.getElementById("date-input").value = VIEWING_DATE;
   document.querySelectorAll("input[name=\"time\"]").forEach(i => i.value = nowHM());
   document.getElementById("food-form").addEventListener("submit", handleFoodSubmit);
