@@ -13,7 +13,7 @@
       "name": "health-tracker",
       "source": "./health-tracker",
       "description": "Daily food, exercise, and digestion (gut-symptom) tracker that saves to plain local Markdown files, with a visual dashboard and live Strava support.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": { "name": "Brad Rosen" },
       "keywords": ["health", "nutrition", "food-log", "digestion", "strava", "fitness"]
     }
